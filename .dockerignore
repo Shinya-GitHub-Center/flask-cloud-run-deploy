@@ -1,0 +1,37 @@
+# Python関連
+**/__pycache__/
+__pycache__
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv/
+
+# 開発ツール
+.git/
+.gitignore
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# プロジェクト管理
+pyproject.toml
+uv.lock
+.python-version
+.pytest_cache/
+.coverage
+htmlcov/
+
+# ドキュメント
+README.md
+*.md
+
+# その他
+.DS_Store
+.env
+.env.local
