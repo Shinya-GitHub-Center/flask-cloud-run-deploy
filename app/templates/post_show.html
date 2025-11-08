@@ -4,15 +4,15 @@
 
 {% block header %}
 <header class="masthead" style="background-image: url('/static/images/post-bg.jpg')">
-    <div class="container position-relative px-4 px-lg-5">
-        <div class="row gx-4 gx-lg-5 justify-content-center">
-            <div class="col-md-10 col-lg-8 col-xl-7">
+    <div class="container">
+        <div class="row">
+            <div class="col-center">
                 <div class="site-heading">
                     <h1>{{ entry.title }}</h1>
                     <h2 class="subheading">
                         {{entry.contents|truncate(30)}}</h2>
-                    <span class="meta">
-                        <a href="{{ url_for('index') }}">Flask Blog</a>
+                    <span class="post-meta">
+                        <a href="{{ url_for('index') }}">Blog App</a>
                         Posted on {{ entry.create_at }}
                     </span>
                 </div>
@@ -23,14 +23,14 @@
 {% endblock %}
 
 {% block content %}
-<article class="mb-4">
-    <div class="container px-4 px-lg-5">
-        <div class="row gx-4 gx-lg-5 justify-content-center">
-            <div class="col-md-10 col-lg-8 col-xl-7">
+<article>
+    <div class="container">
+        <div class="row">
+            <div class="col-center">
                 <p>{{entry.contents}}</p>
             </div>
         </div>
     </div>
 </article>
-<hr>
+<hr class="divider">
 {% endblock %}
