@@ -7,12 +7,76 @@
     <link href="{{ url_for('static', filename='images/favicon.ico') }}" rel="icon" type="image/x-icon" />
     <link href="{{ url_for('static', filename='css/styles.css') }}" rel="stylesheet" />
     <script src="{{ url_for('static', filename='js/scripts.js') }}"></script>
-    <title>{{ title }}</title>
+    <title>{% block title %}{% endblock %}</title>
 </head>
 
 <body>
-    {% block content %}
-    {% endblock %}
+    <nav class="navbar" id="mainNav">
+        <div class="container">
+            <!-- アンカーテキストとリンク先を設定 -->
+            <a class="navbar-brand" href="{{url_for('index')}}">Blog App</a>
+            <button class="navbar-toggler" type="button" onclick="toggleMenu()" aria-label="Toggle navigation">
+                Menu
+                <span class="menu-icon">☰</span>
+            </button>
+            <div class="navbar-collapse" id="navbarResponsive">
+                <ul class="navbar-nav">
+                    <!-- Homeのリンク先を設定 -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{url_for('index')}}">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="about.html">About</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="post.html">Sample Post</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="contact.html">Contact</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    {% block header %}{% endblock %}
+    {% block content %}{% endblock %}
+    <footer class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-center">
+                    <ul class="social-links">
+                        <li class="social-item">
+                            <a href="https://www.twitter.com/">
+                                <span class="icon-circle">
+                                    <span class="icon-bg">●</span>
+                                    <span class="icon-twitter">🐦</span>
+                                </span>
+                            </a>
+                        </li>
+                        <li class="social-item">
+                            <a href="https://www.facebook.com/">
+                                <span class="icon-circle">
+                                    <span class="icon-bg">●</span>
+                                    <span class="icon-facebook">f</span>
+                                </span>
+                            </a>
+                        </li>
+                        <li class="social-item">
+                            <a href="https://github.co.jp">
+                                <span class="icon-circle">
+                                    <span class="icon-bg">●</span>
+                                    <span class="icon-github">⚙</span>
+                                </span>
+                            </a>
+                        </li>
+                    </ul>
+                    <!-- 著作権表示-->
+                    <div class="copyright">
+                        Copyright &copy; Your Wonderful Blog 2025</div>
+                </div>
+            </div>
+        </div>
+    </footer>
 </body>
 
 </html>
