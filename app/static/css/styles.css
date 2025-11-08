@@ -1,3 +1,446 @@
+/* ========== Reset & Base Styles ========== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
 body {
-    background: #B2DFDB
+    font-family: 'Lora', 'Times New Roman', serif;
+    font-size: 20px;
+    color: #212529;
+    line-height: 1.5;
+}
+
+a {
+    color: #212529;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+a:hover,
+a:focus {
+    color: #0085A1;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-weight: 800;
+}
+
+/* ========== Container & Layout ========== */
+.container {
+    width: 100%;
+    max-width: 1140px;
+    margin: 0 auto;
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+
+.row {
+    display: flex;
+    flex-wrap: wrap;
+    margin-left: -0.75rem;
+    margin-right: -0.75rem;
+}
+
+.col-center {
+    width: 100%;
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+    margin: 0 auto;
+}
+
+/* ========== Navigation ========== */
+.navbar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1030;
+    background-color: transparent;
+    padding: 1.5rem 0;
+    transition: background-color 0.2s ease-in-out;
+}
+
+.navbar.is-fixed {
+    position: fixed;
+    top: -67px;
+    background-color: #fff;
+    border-bottom: 1px solid #dee2e6;
+    transition: transform 0.2s ease-in-out;
+}
+
+.navbar.is-fixed.is-visible {
+    transform: translateY(67px);
+}
+
+.navbar .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.navbar-brand {
+    font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-weight: 800;
+    color: white;
+    font-size: 1.25rem;
+}
+
+.navbar.is-fixed .navbar-brand {
+    color: #212529;
+}
+
+.navbar-toggler {
+    display: none;
+    padding: 0.25rem 0.75rem;
+    font-size: 1.25rem;
+    line-height: 1;
+    background-color: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: 0.25rem;
+    color: white;
+    cursor: pointer;
+}
+
+.navbar.is-fixed .navbar-toggler {
+    border-color: rgba(0, 0, 0, 0.1);
+    color: #212529;
+}
+
+.menu-icon {
+    margin-left: 0.5rem;
+}
+
+.navbar-collapse {
+    flex-basis: 100%;
+    flex-grow: 1;
+    align-items: center;
+}
+
+.navbar-nav {
+    display: flex;
+    flex-direction: row;
+    list-style: none;
+    margin-left: auto;
+    padding: 1rem 0;
+}
+
+.nav-item {
+    list-style: none;
+}
+
+.nav-link {
+    display: block;
+    padding: 0.75rem 1rem;
+    color: white;
+    font-size: 0.875rem;
+    font-weight: 800;
+    letter-spacing: 0.0625em;
+    text-transform: uppercase;
+}
+
+.navbar.is-fixed .nav-link {
+    color: #212529;
+}
+
+.nav-link:hover {
+    color: #0085A1;
+}
+
+/* ========== Header / Masthead ========== */
+.masthead {
+    margin-bottom: 3rem;
+    padding: 12.5rem 0;
+    position: relative;
+    background: no-repeat center center;
+    background-color: #868e96;
+    background-attachment: scroll;
+    background-size: cover;
+}
+
+.masthead::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #212529;
+    opacity: 0.5;
+}
+
+.masthead .container {
+    position: relative;
+    z-index: 1;
+}
+
+.site-heading {
+    padding: 12.5rem 0;
+    text-align: center;
+    color: white;
+}
+
+.site-heading h1 {
+    font-size: 5rem;
+    margin: 0;
+    line-height: 1;
+}
+
+.subheading {
+    font-size: 1.5rem;
+    line-height: 1.1;
+    display: block;
+    margin-top: 0.625rem;
+    font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-weight: 300;
+}
+
+/* ========== Post Preview ========== */
+.post-preview {
+    margin-bottom: 2.5rem;
+}
+
+.post-preview>a {
+    color: #212529;
+}
+
+.post-preview>a:hover .post-title,
+.post-preview>a:focus .post-title {
+    color: #0085A1;
+}
+
+.post-title {
+    font-size: 1.875rem;
+    margin-top: 1.875rem;
+    margin-bottom: 0.625rem;
+}
+
+.post-subtitle {
+    font-weight: 300;
+    margin: 0 0 0.625rem;
+    font-size: 1.5rem;
+}
+
+.post-meta {
+    font-size: 1.125rem;
+    font-style: italic;
+    margin-top: 0;
+    color: #6c757d;
+}
+
+.post-meta>a {
+    text-decoration: none;
+    color: #212529;
+}
+
+.post-meta>a:hover,
+.post-meta>a:focus {
+    color: #0085A1;
+    text-decoration: underline;
+}
+
+/* ========== Divider ========== */
+.divider {
+    margin: 2.5rem 0;
+    border: 0;
+    border-top: 1px solid #dee2e6;
+}
+
+/* ========== Pager ========== */
+.pager-wrapper {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 1.5rem;
+}
+
+.btn-primary {
+    display: inline-block;
+    padding: 0.9375rem 1.875rem;
+    font-size: 0.875rem;
+    font-weight: 800;
+    letter-spacing: 0.0625em;
+    text-transform: uppercase;
+    border-radius: 0.5rem;
+    background-color: #0085A1;
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-primary:hover {
+    background-color: #00657c;
+}
+
+/* ========== Footer ========== */
+.footer {
+    padding: 3rem 0 4rem;
+    border-top: 1px solid #dee2e6;
+}
+
+.social-links {
+    list-style: none;
+    display: flex;
+    justify-content: center;
+    margin-bottom: 0;
+    padding: 0;
+}
+
+.social-item {
+    margin: 0 0.625rem;
+}
+
+.icon-circle {
+    display: inline-block;
+    position: relative;
+    width: 3.75rem;
+    height: 3.75rem;
+}
+
+.icon-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    font-size: 3.75rem;
+    color: #212529;
+    line-height: 1;
+}
+
+.icon-twitter,
+.icon-facebook,
+.icon-github {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-size: 1.25rem;
+    font-weight: bold;
+}
+
+.icon-circle:hover .icon-bg {
+    color: #0085A1;
+}
+
+.copyright {
+    font-size: 0.875rem;
+    text-align: center;
+    color: #6c757d;
+    font-style: italic;
+    margin-top: 2rem;
+}
+
+/* ========== Responsive Design ========== */
+@media (min-width: 768px) {
+    .container {
+        padding-left: 1.5rem;
+        padding-right: 1.5rem;
+    }
+
+    .col-center {
+        max-width: 83.333333%;
+    }
+}
+
+@media (min-width: 992px) {
+    .container {
+        max-width: 960px;
+        padding-left: 2.5rem;
+        padding-right: 2.5rem;
+    }
+
+    .col-center {
+        max-width: 66.666667%;
+    }
+
+    .navbar {
+        padding: 1.5rem 0;
+    }
+
+    .navbar-nav {
+        padding: 0;
+    }
+
+    .nav-link {
+        padding: 0.75rem 1.5rem;
+    }
+
+    .site-heading h1 {
+        font-size: 5rem;
+    }
+}
+
+@media (min-width: 1200px) {
+    .container {
+        max-width: 1140px;
+    }
+
+    .col-center {
+        max-width: 58.333333%;
+    }
+}
+
+@media (max-width: 991px) {
+    .navbar-toggler {
+        display: inline-block;
+    }
+
+    .navbar-collapse {
+        display: none;
+    }
+
+    .navbar-collapse.show {
+        display: block;
+    }
+
+    .navbar-nav {
+        flex-direction: column;
+        padding: 1rem 0;
+    }
+
+    .nav-link {
+        padding: 0.75rem 1rem;
+    }
+
+    .site-heading h1 {
+        font-size: 3.125rem;
+    }
+
+    .subheading {
+        font-size: 1.25rem;
+    }
+}
+
+@media (max-width: 767px) {
+    .masthead {
+        padding: 8rem 0;
+    }
+
+    .site-heading {
+        padding: 8rem 0;
+    }
+
+    .site-heading h1 {
+        font-size: 2.5rem;
+    }
+
+    .subheading {
+        font-size: 1.125rem;
+    }
+
+    .post-title {
+        font-size: 1.5rem;
+    }
+
+    .post-subtitle {
+        font-size: 1.25rem;
+    }
 }
