@@ -13,7 +13,8 @@ wheels/
 uv.lock
 
 #database
-*.sqlite
+db/*
+!db/.gitkeep
 
 #env
 .env
