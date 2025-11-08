@@ -24,6 +24,3 @@ def index():
 from app.crud.views import crud
 
 app.register_blueprint(crud)
-
-if __name__ == "__main__":
-    app.run(debug=True)
