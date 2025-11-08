@@ -1,0 +1,28 @@
+{% extends 'layout_crud.html' %}
+
+{% block content %}
+<div class="pad">
+    <h2>Deleting Post Page</h2>
+    <p>
+        Click 'Delete' on the target article
+    </p>
+    <a href="{{ url_for('crud.login_del') }}">Abort Deletion</a>
+    <br><br>
+    <table>
+        <tr>
+            <th>ID</th>
+            <th>Title</th>
+            <th>Delete</th>
+        </tr>
+        {% for entry in entries %}
+        <tr>
+            <td>{{entry.id}}</td>
+            <td>{{entry.title}}</td>
+            <td>
+                <a href="{{ url_for('crud.delete', id=entry.id )}}">Delete</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+{% endblock %}

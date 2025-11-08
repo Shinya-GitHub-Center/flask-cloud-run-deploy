@@ -1,0 +1,27 @@
+{% extends 'layout_crud.html' %}
+
+{% block content %}
+<div class="pad">
+    <h3>Login to the deleting post page</h3>
+    <form action="{{ url_for('crud.login_del') }}" method="POST" novalidate="novalidate">
+        {{form.csrf_token}}
+        <p>
+            {{form.username.label}}
+            {{form.username(placeholder='Admin Name')}}
+            {% for error in form.username.errors %}
+            <span style="color:red">{{ error }}</span>
+            {% endfor %}
+        </p>
+        <p>
+            {{form.password.label}}
+            {{form.password(placeholder='Password')}}
+            {% for error in form.password.errors %}
+            <span style="color:red">{{ error }}</span>
+            {% endfor %}
+        </p>
+        <p>
+            {{form.submit()}}
+        </p>
+    </form>
+</div>
+{% endblock %}

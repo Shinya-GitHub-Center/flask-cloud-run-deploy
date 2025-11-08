@@ -1,0 +1,33 @@
+{% extends 'layout_crud.html' %}
+
+{% block content %}
+<div class="pad">
+    <h2>Posting Page</h2>
+    <p>
+        Fill out the 'Title' and 'Content' boxes, then click Post
+    </p>
+    <br>
+    <form action="{{ url_for('crud.article') }}" method="POST" novalidate="novalidate">
+        {{form.csrf_token}}
+        <p>
+            {{form.post_title.label}}
+            {{form.post_title(placeholder='Fill out the Title')}}
+            {% for error in form.post_title.errors %}
+            <span style="color:red">{{ error }}</span>
+            {% endfor %}
+        </p>
+        <p>
+            {{form.post_contents.label}}
+            {{form.post_contents(placeholder='Fill out the Content')}}
+            {% for error in form.post_contents.errors %}
+            <span style="color:red">{{ error }}</span>
+            {% endfor %}
+        </p>
+        <hr>
+        <p>
+            {{form.submit()}}
+        </p>
+    </form>
+    <a href="{{ url_for('crud.login') }}">Abort Post</a>
+</div>
+{% endblock %}

@@ -1,0 +1,23 @@
+.pad {
+    background-color: lavender;
+    border: solid 2px;
+    padding-top: 30px;
+    padding-bottom: 50px;
+    padding-left: 100px;
+    margin-top: 50px;
+    margin-right: 70px;
+    margin-left: 70px;
+}
+
+table th {
+    padding: 5px 10px;
+}
+
+table td {
+    padding: 5px 10px;
+}
+
+th,
+td {
+    border: solid 1px #aaaaaa;
+}
