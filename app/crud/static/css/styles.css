@@ -12,7 +12,7 @@
 }
 
 body {
-    font-family: var(--accentFont);
+    font-family: var(--primaryFont);
     font-size: 20px;
     color: #212529;
     line-height: 1.5;
@@ -38,7 +38,7 @@ h3,
 h4,
 h5,
 h6 {
-    font-family: var(--primaryFont);
+    font-family: var(--accentFont);
     font-weight: 800;
     color: #212529;
 }
@@ -87,7 +87,7 @@ form p {
 
 label {
     display: block;
-    font-family: var(--primaryFont);
+    font-family: var(--accentFont);
     font-weight: 600;
     font-size: 0.95rem;
     color: #212529;
@@ -102,7 +102,7 @@ textarea {
     width: 100%;
     padding: 0.875rem 1rem;
     font-size: 1rem;
-    font-family: var(--accentFont);
+    font-family: var(--primaryFont);
     border: 2px solid #dee2e6;
     border-radius: 0.5rem;
     transition: border-color 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease;
@@ -130,7 +130,7 @@ input[type="submit"] {
     padding: 1rem 2rem;
     font-size: 0.875rem;
     font-weight: 800;
-    font-family: var(--primaryFont);
+    font-family: var(--accentFont);
     letter-spacing: 0.0625em;
     text-transform: uppercase;
     border-radius: 0.5rem;
@@ -158,7 +158,7 @@ span[style*="color:red"] {
     color: #dc3545 !important;
     font-size: 0.875rem;
     margin-top: 0.5rem;
-    font-family: var(--primaryFont);
+    font-family: var(--accentFont);
 }
 
 /* ========== Table Styles ========== */
@@ -177,7 +177,7 @@ table th {
     color: white;
     padding: 1rem;
     text-align: left;
-    font-family: var(--primaryFont);
+    font-family: var(--accentFont);
     font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 0.05em;
@@ -228,7 +228,7 @@ table td a:hover {
     background-color: #6c757d;
     color: white;
     border-radius: 0.5rem;
-    font-family: var(--primaryFont);
+    font-family: var(--accentFont);
     font-weight: 600;
     font-size: 0.875rem;
     text-transform: uppercase;
