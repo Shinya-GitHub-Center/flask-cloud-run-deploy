@@ -11,31 +11,9 @@
 </head>
 
 <body>
-    <nav class="navbar" id="mainNav">
+    <nav class="navbar">
         <div class="container">
-            <!-- アンカーテキストとリンク先を設定 -->
             <a class="navbar-brand" href="{{url_for('index')}}">Blog App</a>
-            <button class="navbar-toggler" type="button" onclick="toggleMenu()" aria-label="Toggle navigation">
-                Menu
-                <span class="menu-icon">☰</span>
-            </button>
-            <div class="navbar-collapse" id="navbarResponsive">
-                <ul class="navbar-nav">
-                    <!-- Homeのリンク先を設定 -->
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{url_for('index')}}">Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="about.html">About</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="post.html">Sample Post</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="contact.html">Contact</a>
-                    </li>
-                </ul>
-            </div>
         </div>
     </nav>
     {% block header %}{% endblock %}

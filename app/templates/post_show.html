@@ -1,6 +1,6 @@
 {% extends 'layout.html' %}
 
-{% block title %}Blog App{% endblock %}
+{% block title %}Blog App | {{ entry.title }}{% endblock %}
 
 {% block header %}
 <header class="masthead" style="background-image: url('/static/images/post-bg.jpg')">
@@ -12,8 +12,7 @@
                     <h2 class="subheading">
                         {{entry.contents|truncate(30)}}</h2>
                     <span class="post-meta">
-                        <a href="{{ url_for('index') }}">Blog App</a>
-                        Posted on {{ entry.create_at }}
+                        Admin posted on {{ entry.create_at }}
                     </span>
                 </div>
             </div>
