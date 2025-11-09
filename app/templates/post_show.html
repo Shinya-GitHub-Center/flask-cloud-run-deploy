@@ -3,12 +3,14 @@
 {% block title %}Blog App | {{ entry.title }}{% endblock %}
 
 {% block header %}
-<header class="masthead" style="background-image: url('/static/images/post-bg.jpg')">
+<header class="masthead" style="background-image: url('/static/images/entry_back.jpg')">
     <div class="container">
         <div class="row">
             <div class="col-center">
                 <div class="site-heading">
-                    <h1>{{ entry.title }}</h1>
+                    <div class="entry-title">
+                        <h1>{{ entry.title }}</h1>
+                    </div>
                     <h2 class="subheading">
                         {{entry.contents|truncate(30)}}</h2>
                     <span class="post-meta">
@@ -31,5 +33,4 @@
         </div>
     </div>
 </article>
-<hr class="divider">
 {% endblock %}
