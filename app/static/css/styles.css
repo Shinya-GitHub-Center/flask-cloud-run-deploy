@@ -1,3 +1,9 @@
+:root {
+    --accentFont: ui-serif, Georgia, Times, serif;
+    --primaryFont: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Segoe UI Variable', Roboto, 'Noto Sans JP', 'Helvetica Neue', Arial, sans-serif;
+    --secondaryFont: ui-monospace, 'SF Mono', 'Cascadia Code', 'Roboto Mono', Consolas, 'Liberation Mono', Menlo, monospace;
+}
+
 /* ========== Reset & Base Styles ========== */
 * {
     margin: 0;
@@ -6,7 +12,7 @@
 }
 
 body {
-    font-family: 'Lora', 'Times New Roman', serif;
+    font-family: var(--accentFont);
     font-size: 20px;
     color: #212529;
     line-height: 1.5;
@@ -29,7 +35,7 @@ h3,
 h4,
 h5,
 h6 {
-    font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-family: var(--primaryFont);
     font-weight: 800;
 }
 
@@ -74,7 +80,7 @@ h6 {
 }
 
 .navbar-brand {
-    font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-family: var(--primaryFont);
     font-weight: 800;
     color: white;
     font-size: 1.25rem;
@@ -124,7 +130,7 @@ h6 {
     line-height: 1.1;
     display: block;
     margin-top: 0.625rem;
-    font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-family: var(--primaryFont);
     font-weight: 300;
 }
 
