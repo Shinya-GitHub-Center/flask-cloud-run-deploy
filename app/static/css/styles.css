@@ -186,6 +186,10 @@ h6 {
 }
 
 /* ========== Article Content ========== */
+article {
+    padding-bottom: 4rem;
+}
+
 article p {
     word-wrap: break-word;
     overflow-wrap: break-word;
@@ -268,7 +272,7 @@ article p {
 
 /* ========== Footer ========== */
 .footer {
-    padding: 3rem 0 4rem;
+    padding: 1rem 0 2rem;
     border-top: 1px solid #dee2e6;
     background-color: #ffa7ea;
 }
@@ -297,7 +301,7 @@ article p {
     top: 0;
     left: 0;
     font-size: 3.75rem;
-    color: #212529;
+    color: #ff2f2f;
     line-height: 1;
 }
 
@@ -322,7 +326,7 @@ article p {
     text-align: center;
     color: #6c757d;
     font-style: italic;
-    margin-top: 2rem;
+    margin-top: 0.5rem;
 }
 
 /* ========== Responsive Design ========== */
