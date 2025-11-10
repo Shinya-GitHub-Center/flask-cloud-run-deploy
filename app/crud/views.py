@@ -49,7 +49,7 @@ def article():
         db.session.add(mypost)
         db.session.commit()
         session.pop("logged_in", None)
-        return redirect(url_for("crud.login"))
+        return redirect(url_for("index"))
 
     return render_template("post.html", form=form_art)
 
@@ -85,4 +85,4 @@ def delete(id):
     db.session.delete(entry)
     db.session.commit()
     session.pop("logged_in", None)
-    return redirect(url_for("crud.login_del"))
+    return redirect(url_for("index"))

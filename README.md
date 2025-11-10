@@ -599,3 +599,7 @@ gcloud run deploy flask-cloud-run-deploy \
 ```
 
 これで、Google アカウントでのログインが必要になります。
+
+# Tips
+- サーバーサイド（Python/Flask）: app/main.py, app/crud/views.pyなどのPythonコードはサーバー上で実行され、HTMLを生成します
+- クライアントサイド（JavaScript）: static/js/scripts.jsはブラウザで実行され、DOM操作、イベント処理、動的な画面更新などを行います
