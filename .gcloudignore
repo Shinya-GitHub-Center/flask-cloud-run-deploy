@@ -36,8 +36,9 @@ htmlcov/
 .flask_session/
 instance/
 
-# データベース（開発用）
+# データベース（ローカル専用）
 *.sqlite
+db/
 
 # IDE・OS
 .DS_Store

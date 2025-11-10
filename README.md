@@ -26,7 +26,10 @@ Notice: Zipでダウンロードした場合は各自でGit初期化してくだ
 - コナミコマンド（↑↑↓↓←→←→BA）で管理人専用投稿画面をひらく（ログインが必要、`settings.py`のUSERNAMEとPASSWORDを参照）。タブレットの場合は、`/post`パスへ直接移動してください。
 - 別コナミコマンド（←→←→BA）で管理人専用記事削除画面をひらく（ログインが必要、`settings.py`のUSERNAMEとPASSWORDを参照）。タブレットの場合は、`/delete`パスへ直接移動してください。
 
+## Tips
 
+- サーバーサイド（Python/Flask）: app/main.py, app/crud/views.pyなどのPythonコードはサーバー上で実行され、HTMLを生成します
+- クライアントサイド（JavaScript）: static/js/scripts.jsはブラウザで実行され、DOM操作、イベント処理、動的な画面更新などを行います
 
 # デプロイ設定ファイルについて
 
@@ -145,7 +148,7 @@ docker build --no-cache -t test-image . 2>&1 | grep "Sending build context"
 gcloud run deploy --source . --dry-run
 ```
 
-# Google Cloud Run デプロイ手順
+# Google Cloud アカウント初期設定
 
 このドキュメントでは、FlaskアプリをGoogle Cloud Runにデプロイする手順を説明します。
 
@@ -189,95 +192,246 @@ gcloud services enable cloudbuild.googleapis.com
 gcloud services enable run.googleapis.com
 ```
 
-## デプロイ方法
+# データベース初期化からデプロイまで
 
-### 方法1: Cloud Buildを使用（推奨・最も簡単）
+## 概要
 
-プロジェクトのルートディレクトリで以下を実行：
+このアプリケーションは、環境変数を使って自動的に本番環境とローカル環境のデータベースを切り替えます。
+
+- **ローカル環境**: SQLite（`db/blogpost.sqlite`）
+- **本番環境**: Google Cloud SQL（MySQL）
+
+## 1. Cloud SQL インスタンスの作成
+
+gcloudコマンドを使用するので、作業の前に`gcloud info`でターゲットのプロジェクトが選択されていることを確認してください。  
+（sqladmin.googleapis.comを有効にしてくださいと言われたたYESを選択）
+
+### MySQL を使用する場合（本プロジェクトで使用）
+
+Cloud SQL インスタンスを作成  
+`gcloud sql instances create utopian-food-blog-db --database-version=MYSQL_8_0 --tier=db-f1-micro --region=asia-northeast1`
+
+データベースを作成  
+`gcloud sql databases create blogpost --instance=utopian-food-blog-db`
+
+ユーザーを作成  
+`gcloud sql users create bloguser --instance=utopian-food-blog-db --password=YOUR_SECURE_PASSWORD`
+
+## 2. データベースのマイグレーション
+
+本番環境に初めてデプロイする際は、データベースのテーブルを作成する必要があります。  
+※以下の方法はめんどくさいので今回はスキップ
+- Cloud SQL Proxyを使ってローカルから実行する方法
+- リモートコンテナの中からマイグレーションファイルをDB接続して注入する方法
+
+### Cloud Shellを使う（最も簡単・推奨）
+
+### 1. Cloud Shellを起動
+
+1. ブラウザでGoogle Cloud Consoleにアクセスして、ターゲットのプロジェクトに切り替える。
+2. 画面右上の「**Cloud Shellをアクティブにする**」アイコン（`>_`）をクリック
+3. 画面下部にターミナルが表示される（カレントディレクトリ表示の横にプロジェクト名があるのを確認）
+
+### 2. Cloud SQLインスタンスに接続
+
+Cloud Shellで以下のコマンドを実行：
+
+```bash
+gcloud sql connect utopian-food-blog-db --user=bloguser
+```
+
+### 3. パスワードを入力
+
+プロンプトが表示されたら、Cloud SQLインスタンス作成時に設定したパスワードを入力：
+
+```
+Allowlisting your IP for incoming connection for 5 minutes...done.
+Connecting to database with SQL user [bloguser].Enter password:
+```
+
+パスワードを入力すると、MySQLプロンプト（`mysql>`）が表示されます。
+
+### 4. 接続後にデータベースを選択
+
+MySQLプロンプトが表示されたら、以下のコマンドでデータベースを選択：
+
+```
+USE blogpost;
+```
+
+### 5. テーブルを作成（マイグレーション実行）
+
+MySQLプロンプトで以下のSQLコマンドを実行：  
+（各SQLコマンドをひとつづつ実行）
+
+```sql
+-- テーブルを作成
+CREATE TABLE posted (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(200) NOT NULL,
+    contents TEXT NOT NULL,
+    create_at DATE
+);
+
+-- Alembicのバージョン管理テーブルを作成
+CREATE TABLE IF NOT EXISTS alembic_version (
+    version_num VARCHAR(32) NOT NULL,
+    CONSTRAINT alembic_version_pkc PRIMARY KEY (version_num)
+);
+
+-- 現在のマイグレーションバージョンを記録
+INSERT INTO alembic_version (version_num) VALUES ('47d32b838e67');
+```
+
+### 6. 確認
+
+テーブルが正しく作成されたか確認：
+
+```sql
+-- テーブル一覧を表示
+SHOW TABLES;
+
+-- postedテーブルの構造を確認
+DESCRIBE posted;
+
+-- データを確認（空のはず）
+SELECT * FROM posted;
+```
+
+### 7. 終了
+
+```sql
+-- MySQLから切断
+exit;
+```
+
+### 注意点
+
+1. **接続は5分間有効**：Cloud Shellからの接続は、自動的にIPアドレスが一時的に許可リストに追加され、5分間有効です
+2. **プロジェクトIDの確認**：別のプロジェクトを操作している場合は、`gcloud config set project PROJECT_ID`で切り替え
+3. **パスワードを忘れた場合**：Cloud Consoleから、または`gcloud sql users set-password`でリセット可能
+
+## 3. 接続文字列の取得
+
+### MySQL の場合（本プロジェクトで使用）
+
+```
+mysql+pymysql://bloguser:YOUR_SECURE_PASSWORD@/blogpost?unix_socket=/cloudsql/PROJECT_ID:asia-northeast1:utopian-food-blog-db
+```
+
+**PROJECT_ID** を実際の Google Cloud プロジェクトIDに置き換えてください。
+
+## 4. 必要なパッケージの追加
+
+`requirements.txt` には以下が既に追加されています：
+
+### MySQL を使用する場合（本プロジェクトで使用）
+
+```txt
+pymysql>=1.1.0
+cryptography>=41.0.7
+```
+
+## 5. Secret Manager での機密情報の管理（推奨）
+
+### Secret Manager を有効化
+
+```bash
+gcloud services enable secretmanager.googleapis.com
+```
+
+### シークレットを作成
+
+```bash
+# データベース接続文字列（MySQL）
+echo -n "mysql+pymysql://bloguser:YOUR_PASSWORD@/blogpost?unix_socket=/cloudsql/PROJECT_ID:asia-northeast1:utopian-food-blog-db" | gcloud secrets create utopian-blog-db-connection --data-file=-
+
+# SECRET_KEY（ランダムな文字列を生成）
+python3 -c "import secrets; print(secrets.token_hex(32))" | gcloud secrets create utopian-blog-secret-key --data-file=-
+
+# ブログアプリログインユーザー名
+echo -n "your_login_name" | gcloud secrets create utopian-blog-admin-username --data-file=-
+
+# ブログアプリパスワード
+echo -n "your_login_password" | gcloud secrets create utopian-blog-admin-password --data-file=-
+```
+## 6. サービスアカウントにシークレット読み取りの権限を与える
+
+コマンドだとめんどくさいで、ブラウザで該当プロジェクト上でサービスアカウントページを開き、`default compute service account`にSecret Managerのシークレットアクセサーのロールを追加する。（権限→アクセス管理→ロールから選択で追加）
+
+### 🔐 権限の説明
+
+- **`roles/secretmanager.secretAccessor`**: Secret Managerに保存されたシークレット（パスワードや接続文字列など）を読み取る権限
+- **対象サービスアカウント**: `xxxxxxxxxxxxx-compute@developer.gserviceaccount.com`（Compute Engineのデフォルトサービスアカウント）
+- **スコープ**: プロジェクト全体に付与
+
+### 💡 補足
+
+このサービスアカウント（`*-compute@developer.gserviceaccount.com`）は、Google Cloudのデフォルトサービスアカウントで、Cloud Runなどのサービスが使用します。今回のように、Secret Managerなどの他のサービスにアクセスする場合は、明示的に権限を付与する必要があります。
+
+## 7. Cloud Buildを使用してデプロイ
+
+Secret Manager から参照しながらデプロイする。プロジェクトのルートディレクトリで以下を実行：
 
 ```bash
 gcloud run deploy utopian-food-blog \
-  --source . \
-  --platform managed \
-  --region asia-northeast1 \
-  --allow-unauthenticated
+    --source . \
+    --platform managed \
+    --region asia-northeast1 \
+    --allow-unauthenticated \
+    --add-cloudsql-instances PROJECT_ID:asia-northeast1:utopian-food-blog-db \
+    --set-secrets "GCLOUD_DB_CONNECTION=utopian-blog-db-connection:latest,SECRET_KEY=utopian-blog-secret-key:latest,ADMIN_PASSWORD=utopian-blog-admin-password:latest,ADMIN_USERNAME=utopian-blog-admin-username:latest"
 ```
 
-or
+## 8. 動作確認
 
-`gcloud run deploy utopian-food-blog --platform managed --region asia-northeast1 --allow-unauthenticated --source .`
-
-**パラメータの説明：**
-- `utopian-food-blog`: サービス名（任意に変更可能）
-- `--source .`: 現在のディレクトリをソースとして使用
-- `--region asia-northeast1`: 東京リージョン
-- `--allow-unauthenticated`: 認証なしでアクセス可能（テストアプリの場合）
-
-#### `--source .` の動作について
-
-`--source .` を指定すると、以下の処理が自動的に実行されます：
-
-1. **ローカルのDockerfileを自動検出**
-   - プロジェクトルートの`Dockerfile`を自動的に発見
-   - `.dockerignore`の除外ルールも適用される
-
-2. **ソースコードをGoogle Cloud Buildに送信**
-   - Dockerfile、requirements.txt、app/ などが転送される
-   - `.dockerignore`で除外したファイル（.git/, .venv/など）は送信されない
-
-3. **リモートビルド（Cloud Build上）**
-   - Google Cloud上でDockerイメージをビルド
-   - ローカルにDockerをインストールする必要なし
-   - ローカルマシンのリソースを使わない
-
-4. **自動デプロイ**
-   - ビルドしたイメージを自動的にCloud Runにデプロイ
-   - 全てのプロセスが1コマンドで完結
-
-**メリット：**
-- ✅ 最もシンプル（1コマンドで完結）
-- ✅ ローカルでDockerをインストール・実行する必要なし
-- ✅ Dockerfileを自動検出
-- ✅ リモートビルドなのでローカルマシンへの負荷なし
-
-## デプロイ後
-
-デプロイが完了すると、以下のようなURLが表示されます：
-
-```
-Service URL: https://utopian-food-blog-xxxxxxxxxx-an.a.run.app
-```
-
-このURLにアクセスして、アプリが動作することを確認してください！
-
-## 便利なコマンド
-
-### サービスの一覧を表示
+### 環境変数が正しく設定されているか確認
 
 ```bash
-gcloud run services list
+gcloud run services describe utopian-food-blog \
+    --region asia-northeast1 \
+    --format "value(spec.template.spec.containers[0].env)"
 ```
 
 ### ログの確認
 
 ```bash
-gcloud run services logs read utopian-food-blog --region asia-northeast1
+gcloud run logs read utopian-food-blog --region asia-northeast1
 ```
 
-### サービスの詳細情報
+## セキュリティのベストプラクティス
+
+1. **Secret Manager を使用する**: データベース接続情報やパスワードは Secret Manager に保存
+2. **最小権限の原則**: Cloud Run サービスアカウントに必要最小限の権限のみ付与
+3. **Cloud SQL の認証プロキシを使用**: 公開 IP を避け、Unix ソケット経由で接続
+4. **SSL/TLS を有効化**: データベース接続を暗号化
+5. **定期的なバックアップ**: Cloud SQL の自動バックアップを有効化
+
+## トラブルシューティング
+
+### 接続エラーが発生する場合
+
+1. Cloud SQL インスタンス名が正しいか確認
+2. `--add-cloudsql-instances` フラグが設定されているか確認
+3. サービスアカウントに Cloud SQL Client 権限があるか確認
 
 ```bash
-gcloud run services describe utopian-food-blog --region asia-northeast1
+gcloud projects add-iam-policy-binding PROJECT_ID \
+    --member="serviceAccount:SERVICE_ACCOUNT@PROJECT_ID.iam.gserviceaccount.com" \
+    --role="roles/cloudsql.client"
 ```
 
-### サービスの削除
+### マイグレーションエラーが発生する場合
+
+SQLite から PostgreSQL/MySQL への移行時は、データ型の違いに注意が必要です。
+必要に応じて `models.py` のカラム定義を調整してください。
+
+## コスト最適化
+
+- **db-f1-micro**: 無料枠対象（月間の使用量に制限あり）
+- **自動スケーリング**: 使用しない時間帯はインスタンスを停止
 
 ```bash
-gcloud run services delete utopian-food-blog --region asia-northeast1
+# 開発環境では、使用しない時はインスタンスを停止
+gcloud sql instances patch utopian-food-blog-db --activation-policy=NEVER
 ```
-
-
-
-# Tips
-- サーバーサイド（Python/Flask）: app/main.py, app/crud/views.pyなどのPythonコードはサーバー上で実行され、HTMLを生成します
-- クライアントサイド（JavaScript）: static/js/scripts.jsはブラウザで実行され、DOM操作、イベント処理、動的な画面更新などを行います
