@@ -355,9 +355,12 @@ echo -n "your_login_name" | gcloud secrets create utopian-blog-admin-username --
 # ブログアプリパスワード
 echo -n "your_login_password" | gcloud secrets create utopian-blog-admin-password --data-file=-
 ```
-## 6. サービスアカウントにシークレット読み取りの権限を与える
+## 6. サービスアカウントにシークレット読み取り等の権限を与える
 
-コマンドだとめんどくさいで、ブラウザで該当プロジェクト上でサービスアカウントページを開き、`default compute service account`にSecret Managerのシークレットアクセサーのロールを追加する。（権限→アクセス管理→ロールから選択で追加）
+- コマンドだとめんどくさいで、ブラウザで該当プロジェクト上でサービスアカウントページを開き、`default compute service account`に「Secret Managerのシークレットアクセサー」のロールを追加する。（権限→アクセス管理→ロールから選択で追加）
+- 「Storage オブジェクト閲覧者」（Storage Object Viewer）も追加する（コンテナビルド時にアプリが一時的にストレージを使用するため）
+- 「Artifact Registry 書き込み」（Artifact Registry Writer）も追加する（コンテナイメージを保存できるよう）
+- 「ログ閲覧者」と「ログ書き込み」も任意でロール追加すると、エラー時等にリモートでログを確認できるようになる。
 
 ### 🔐 権限の説明
 
