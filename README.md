@@ -44,7 +44,7 @@ Notice: Zipでダウンロードした場合は各自でGit初期化してくだ
 ### Cloud Runへのデプロイ
 
 ```bash
-gcloud run deploy flask-cloud-run-deploy --source .
+gcloud run deploy utopian-food-blog --source .
 ```
 
 **使用されるファイル:**
@@ -196,7 +196,7 @@ gcloud services enable run.googleapis.com
 プロジェクトのルートディレクトリで以下を実行：
 
 ```bash
-gcloud run deploy flask-cloud-run-deploy \
+gcloud run deploy utopian-food-blog \
   --source . \
   --platform managed \
   --region asia-northeast1 \
@@ -205,10 +205,10 @@ gcloud run deploy flask-cloud-run-deploy \
 
 or
 
-`gcloud run deploy flask-cloud-run-deploy --platform managed --region asia-northeast1 --allow-unauthenticated --source .`
+`gcloud run deploy utopian-food-blog --platform managed --region asia-northeast1 --allow-unauthenticated --source .`
 
 **パラメータの説明：**
-- `flask-cloud-run-deploy`: サービス名（任意に変更可能）
+- `utopian-food-blog`: サービス名（任意に変更可能）
 - `--source .`: 現在のディレクトリをソースとして使用
 - `--region asia-northeast1`: 東京リージョン
 - `--allow-unauthenticated`: 認証なしでアクセス可能（テストアプリの場合）
@@ -245,7 +245,7 @@ or
 デプロイが完了すると、以下のようなURLが表示されます：
 
 ```
-Service URL: https://flask-cloud-run-deploy-xxxxxxxxxx-an.a.run.app
+Service URL: https://utopian-food-blog-xxxxxxxxxx-an.a.run.app
 ```
 
 このURLにアクセスして、アプリが動作することを確認してください！
@@ -261,19 +261,19 @@ gcloud run services list
 ### ログの確認
 
 ```bash
-gcloud run services logs read flask-cloud-run-deploy --region asia-northeast1
+gcloud run services logs read utopian-food-blog --region asia-northeast1
 ```
 
 ### サービスの詳細情報
 
 ```bash
-gcloud run services describe flask-cloud-run-deploy --region asia-northeast1
+gcloud run services describe utopian-food-blog --region asia-northeast1
 ```
 
 ### サービスの削除
 
 ```bash
-gcloud run services delete flask-cloud-run-deploy --region asia-northeast1
+gcloud run services delete utopian-food-blog --region asia-northeast1
 ```
 
 

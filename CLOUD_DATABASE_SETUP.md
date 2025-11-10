@@ -9,96 +9,21 @@
 
 ## 1. Cloud SQL インスタンスの作成
 
-### MySQL を使用する場合（本プロジェクトで使用）
-
-```bash
-# Cloud SQL インスタンスを作成
-gcloud sql instances create flask-blog-db \
-    --database-version=MYSQL_8_0 \
-    --tier=db-f1-micro \
-    --region=asia-northeast1
-
-# データベースを作成
-gcloud sql databases create blogpost \
-    --instance=flask-blog-db
-
-# ユーザーを作成
-gcloud sql users create bloguser \
-    --instance=flask-blog-db \
-    --password=YOUR_SECURE_PASSWORD
-```
-
-## 2. 接続文字列の取得
-
-### MySQL の場合（本プロジェクトで使用）
-
-```
-mysql+pymysql://bloguser:YOUR_SECURE_PASSWORD@/blogpost?unix_socket=/cloudsql/PROJECT_ID:asia-northeast1:flask-blog-db
-```
-
-**PROJECT_ID** を実際の Google Cloud プロジェクトIDに置き換えてください。
-
-## 3. 必要なパッケージの追加
-
-`requirements.txt` には以下が既に追加されています：
+gcloudコマンドを使用するので、作業の前に`gcloud info`でターゲットのプロジェクトが選択されていることを確認してください。  
+（sqladmin.googleapis.comを有効にしてくださいと言われたたYESを選択）
 
 ### MySQL を使用する場合（本プロジェクトで使用）
 
-```txt
-pymysql>=1.1.0
-cryptography>=41.0.7
-```
+Cloud SQL インスタンスを作成  
+`gcloud sql instances create utopian-food-blog-db --database-version=MYSQL_8_0 --tier=db-f1-micro --region=asia-northeast1`
 
-## 4. Secret Manager での機密情報の管理（推奨）
+データベースを作成  
+`gcloud sql databases create blogpost --instance=utopian-food-blog-db`
 
-### Secret Manager を有効化
+ユーザーを作成  
+`gcloud sql users create bloguser --instance=utopian-food-blog-db --password=YOUR_SECURE_PASSWORD`
 
-```bash
-gcloud services enable secretmanager.googleapis.com
-```
-
-### シークレットを作成
-
-```bash
-# データベース接続文字列（MySQL）
-echo -n "mysql+pymysql://bloguser:YOUR_PASSWORD@/blogpost?unix_socket=/cloudsql/PROJECT_ID:asia-northeast1:flask-blog-db" | \
-    gcloud secrets create gcloud-db-connection --data-file=-
-
-# SECRET_KEY（ランダムな文字列を生成）
-python3 -c "import secrets; print(secrets.token_hex(32))" | \
-    gcloud secrets create flask-secret-key --data-file=-
-
-# 管理者パスワード
-echo -n "your_admin_password" | \
-    gcloud secrets create admin-password --data-file=-
-```
-
-## 5. Cloud Run への環境変数の設定
-
-### 方法 A: 環境変数として直接設定（非推奨：機密情報が含まれる場合）
-
-```bash
-gcloud run deploy flask-blog-app \
-    --image gcr.io/PROJECT_ID/flask-blog-app \
-    --platform managed \
-    --region asia-northeast1 \
-    --add-cloudsql-instances PROJECT_ID:asia-northeast1:flask-blog-db \
-    --set-env-vars "GCLOUD_DB_CONNECTION=mysql+pymysql://bloguser:PASSWORD@/blogpost?unix_socket=/cloudsql/PROJECT_ID:asia-northeast1:flask-blog-db"
-```
-
-### 方法 B: Secret Manager から参照（推奨）
-
-```bash
-gcloud run deploy flask-blog-app \
-    --image gcr.io/PROJECT_ID/flask-blog-app \
-    --platform managed \
-    --region asia-northeast1 \
-    --add-cloudsql-instances PROJECT_ID:asia-northeast1:flask-blog-db \
-    --set-secrets "GCLOUD_DB_CONNECTION=gcloud-db-connection:latest,SECRET_KEY=flask-secret-key:latest,ADMIN_PASSWORD=admin-password:latest" \
-    --set-env-vars "ADMIN_USERNAME=admin"
-```
-
-## 6. データベースのマイグレーション
+## 2. データベースのマイグレーション
 
 本番環境に初めてデプロイする際は、データベースのテーブルを作成する必要があります。
 
@@ -131,6 +56,65 @@ chmod +x cloud_sql_proxy
 export GCLOUD_DB_CONNECTION="mysql+pymysql://bloguser:PASSWORD@localhost:3306/blogpost"
 cd db/migrations
 alembic upgrade head
+```
+
+## 3. 接続文字列の取得
+
+### MySQL の場合（本プロジェクトで使用）
+
+```
+mysql+pymysql://bloguser:YOUR_SECURE_PASSWORD@/blogpost?unix_socket=/cloudsql/PROJECT_ID:asia-northeast1:utopian-food-blog-db
+```
+
+**PROJECT_ID** を実際の Google Cloud プロジェクトIDに置き換えてください。
+
+## 4. 必要なパッケージの追加
+
+`requirements.txt` には以下が既に追加されています：
+
+### MySQL を使用する場合（本プロジェクトで使用）
+
+```txt
+pymysql>=1.1.0
+cryptography>=41.0.7
+```
+
+## 5. Secret Manager での機密情報の管理（推奨）
+
+### Secret Manager を有効化
+
+```bash
+gcloud services enable secretmanager.googleapis.com
+```
+
+### シークレットを作成
+
+```bash
+# データベース接続文字列（MySQL）
+echo -n "mysql+pymysql://bloguser:YOUR_PASSWORD@/blogpost?unix_socket=/cloudsql/PROJECT_ID:asia-northeast1:utopian-food-blog-db" | gcloud secrets create utopian-blog-db-connection --data-file=-
+
+# SECRET_KEY（ランダムな文字列を生成）
+python3 -c "import secrets; print(secrets.token_hex(32))" | gcloud secrets create utopian-blog-secret-key --data-file=-
+
+# ブログアプリログインユーザー名
+echo -n "your_login_name" | gcloud secrets create utopian-blog-admin-username --data-file=-
+
+# ブログアプリパスワード
+echo -n "your_login_password" | gcloud secrets create utopian-blog-admin-password --data-file=-
+```
+
+## 6. Cloud Buildを使用してデプロイ
+
+Secret Manager から参照しながらデプロイする。プロジェクトのルートディレクトリで以下を実行：
+
+```bash
+gcloud run deploy utopian-food-blog \
+    --source . \
+    --platform managed \
+    --region asia-northeast1 \
+    --allow-unauthenticated \
+    --add-cloudsql-instances PROJECT_ID:asia-northeast1:utopian-food-blog-db \
+    --set-secrets "GCLOUD_DB_CONNECTION=utopian-blog-db-connection:latest,SECRET_KEY=utopian-blog-secret-key:latest,ADMIN_PASSWORD=utopian-blog-admin-password:latest,ADMIN_USERNAME=utopian-blog-admin-username:latest"
 ```
 
 ## 7. 動作確認
