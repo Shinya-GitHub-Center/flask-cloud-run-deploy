@@ -1,7 +1,16 @@
 # 本番環境（dockerコンテナの中）で使用するライブラリ
 
-# Flask本体
+# Flask本体と関連ライブラリ
 Flask>=3.1.2
+Flask-Migrate>=4.1.0
+Flask-Paginate>=2024.4.12
+Flask-SQLAlchemy>=3.1.1
+Flask-WTF>=1.2.2
 
 # WSGIサーバー
 gunicorn>=23.0.0
+
+# データベースドライバー（Google Cloud SQL用）
+# MySQL を使用
+pymysql>=1.1.0
+cryptography>=41.0.7
