@@ -24,9 +24,9 @@ def index():
     stmt = select(models.Blogpost).order_by(models.Blogpost.id.desc())
     entries = db.session.execute(stmt).scalars().all()
     page = request.args.get(get_page_parameter(), type=int, default=1)
-    res = entries[(page - 1) * 3 : page * 3]
+    res = entries[(page - 1) * 6 : page * 6]
     pagination = Pagination(
-        page=page, total=len(entries), per_page=3, css_framework="bootstrap5"
+        page=page, total=len(entries), per_page=6, css_framework="bootstrap5"
     )
     return render_template("index.html", rows=res, pagination=pagination)
 
