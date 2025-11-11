@@ -387,6 +387,18 @@ gcloud run deploy utopian-food-blog \
     --set-secrets "GCLOUD_DB_CONNECTION=utopian-blog-db-connection:latest,SECRET_KEY=utopian-blog-secret-key:latest,ADMIN_PASSWORD=utopian-blog-admin-password:latest,ADMIN_USERNAME=utopian-blog-admin-username:latest"
 ```
 
+### 💡 簡単デプロイ：スクリプトを使用
+
+毎回長いコマンドを入力する代わりに、`deploy.sh` スクリプトを使用できます：
+
+```bash
+# 1. スクリプト内の設定値を編集（初回のみ）
+# deploy.sh の PROJECT_ID などを実際の値に変更
+
+# 2. 実行
+./deploy.sh
+```
+
 ## 8. 動作確認
 
 ### 環境変数が正しく設定されているか確認
