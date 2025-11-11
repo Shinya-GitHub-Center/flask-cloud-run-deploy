@@ -28,7 +28,7 @@
             {% for entry in rows %}
             <div class="post-preview">
                 <a href="{{ url_for('show_entry', id=entry.id) }}">
-                    <h2 class="post-title">{{entry.title}}</h2>
+                    <h2 class="post-title">{{entry.title|truncate(80)}}</h2>
                     <h5 class="post-subtitle">{{entry.contents|truncate(80)}}</h5>
                 </a>
                 <p class="post-meta">
