@@ -389,14 +389,39 @@ gcloud run deploy utopian-food-blog \
 
 ### 💡 簡単デプロイ：スクリプトを使用
 
-毎回長いコマンドを入力する代わりに、`deploy.sh` スクリプトを使用できます：
+毎回長いコマンドを入力する代わりに、`deploy.sh` という名前のスクリプトファイルを作って実行してもよいです：  
 
+（例）
 ```bash
-# 1. スクリプト内の設定値を編集（初回のみ）
-# deploy.sh の PROJECT_ID などを実際の値に変更
+#!/bin/bash
 
-# 2. 実行
-./deploy.sh
+# Cloud Run デプロイスクリプト
+# 使い方: ./deploy.sh
+
+set -e
+
+# ========== 設定値（ここを編集してください） ==========
+PROJECT_ID=""
+SERVICE_NAME=""
+REGION=""
+DB_INSTANCE_NAME=""
+
+# Secret Manager のシークレット名
+SECRET_DB_CONNECTION=""
+SECRET_KEY=""
+SECRET_ADMIN_PASSWORD=""
+SECRET_ADMIN_USERNAME=""
+# ====================================================
+
+# デプロイコマンド実行
+gcloud run deploy ${SERVICE_NAME} \
+    --source . \
+    --platform managed \
+    --region ${REGION} \
+    --allow-unauthenticated \
+    --add-cloudsql-instances ${PROJECT_ID}:${REGION}:${DB_INSTANCE_NAME} \
+    --set-secrets "GCLOUD_DB_CONNECTION=${SECRET_DB_CONNECTION}:latest,SECRET_KEY=${SECRET_KEY}:latest,ADMIN_PASSWORD=${SECRET_ADMIN_PASSWORD}:latest,ADMIN_USERNAME=${SECRET_ADMIN_USERNAME}:latest" \
+    --project ${PROJECT_ID}
 ```
 
 ## 8. 動作確認

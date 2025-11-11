@@ -36,3 +36,6 @@ instance/
 .pytest_cache/
 .coverage
 htmlcov/
+
+# Development scripts
+deploy.sh
