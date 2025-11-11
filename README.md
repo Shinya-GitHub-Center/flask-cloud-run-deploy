@@ -209,7 +209,7 @@ gcloudコマンドを使用するので、作業の前に`gcloud info`でター�
 ### MySQL を使用する場合（本プロジェクトで使用）
 
 Cloud SQL インスタンスを作成  
-`gcloud sql instances create utopian-food-blog-db --database-version=MYSQL_8_4 --tier=db-f1-micro --region=asia-northeast1`
+`gcloud sql instances create utopian-food-blog-db --database-version=MYSQL_8_0 --tier=db-f1-micro --region=asia-northeast1`
 
 データベースを作成  
 `gcloud sql databases create blogpost --instance=utopian-food-blog-db`
@@ -357,16 +357,67 @@ echo -n "your_login_password" | gcloud secrets create utopian-blog-admin-passwor
 ```
 ## 6. サービスアカウントにシークレット読み取り等の権限を与える
 
-- コマンドだとめんどくさいで、ブラウザで該当プロジェクト上でサービスアカウントページを開き、`default compute service account`に「Secret Managerのシークレットアクセサー」のロールを追加する。（権限→アクセス管理→ロールから選択で追加）
-- 「Storage オブジェクト閲覧者」（Storage Object Viewer）も追加する（コンテナビルド時にアプリが一時的にストレージを使用するため）
-- 「Artifact Registry 書き込み」（Artifact Registry Writer）も追加する（コンテナイメージを保存できるよう）
-- 「Cloud SQL クライアント」（Cloud SQL Client）のロールも追加付与する。
-- 「ログ閲覧者」と「ログ書き込み」も任意でロール追加すると、エラー時等にリモートでログを確認できるようになる。
+### 方法1：gcloudコマンドで一括設定（推奨）
+
+まず、プロジェクト番号を取得：
+
+```bash
+PROJECT_ID=$(gcloud config get-value project)
+PROJECT_NUMBER=$(gcloud projects describe ${PROJECT_ID} --format="value(projectNumber)")
+SERVICE_ACCOUNT="${PROJECT_NUMBER}-compute@developer.gserviceaccount.com"
+
+echo "サービスアカウント: ${SERVICE_ACCOUNT}"
+```
+
+必要な5つの権限を付与：
+
+```bash
+# 1. Secret Manager のシークレットアクセサー
+gcloud projects add-iam-policy-binding ${PROJECT_ID} \
+    --member="serviceAccount:${SERVICE_ACCOUNT}" \
+    --role="roles/secretmanager.secretAccessor"
+
+# 2. Storage オブジェクト閲覧者（コンテナビルド時に使用）
+gcloud projects add-iam-policy-binding ${PROJECT_ID} \
+    --member="serviceAccount:${SERVICE_ACCOUNT}" \
+    --role="roles/storage.objectViewer"
+
+# 3. Artifact Registry 書き込み（コンテナイメージ保存用）
+gcloud projects add-iam-policy-binding ${PROJECT_ID} \
+    --member="serviceAccount:${SERVICE_ACCOUNT}" \
+    --role="roles/artifactregistry.writer"
+
+# 4. Cloud SQL クライアント
+gcloud projects add-iam-policy-binding ${PROJECT_ID} \
+    --member="serviceAccount:${SERVICE_ACCOUNT}" \
+    --role="roles/cloudsql.client"
+
+# 5. ログ書き込み（エラーログ確認用）
+gcloud projects add-iam-policy-binding ${PROJECT_ID} \
+    --member="serviceAccount:${SERVICE_ACCOUNT}" \
+    --role="roles/logging.logWriter"
+```
+
+### 方法2：ブラウザで手動設定
+
+ブラウザで該当プロジェクト上でサービスアカウントページを開き、`default compute service account`に以下のロールを追加：
+- 「Secret Managerのシークレットアクセサー」
+- 「Storage オブジェクト閲覧者」
+- 「Artifact Registry 書き込み」
+- 「Cloud SQL クライアント」
+- 「ログ書き込み」
 
 ### 🔐 権限の説明
 
-- **`roles/secretmanager.secretAccessor`**: Secret Managerに保存されたシークレット（パスワードや接続文字列など）を読み取る権限
-- **対象サービスアカウント**: `xxxxxxxxxxxxx-compute@developer.gserviceaccount.com`（Compute Engineのデフォルトサービスアカウント）
+| ロール | 説明 |
+|--------|------|
+| `roles/secretmanager.secretAccessor` | Secret Managerに保存されたシークレット（パスワードや接続文字列など）を読み取る権限 |
+| `roles/storage.objectViewer` | Cloud Storageからオブジェクトを読み取る権限（コンテナビルド時に必要） |
+| `roles/artifactregistry.writer` | Artifact Registryにコンテナイメージを書き込む権限 |
+| `roles/cloudsql.client` | Cloud SQLインスタンスへの接続権限 |
+| `roles/logging.logWriter` | Cloud Loggingへのログ書き込み権限（デバッグ・監視用） |
+
+- **対象サービスアカウント**: `PROJECT_NUMBER-compute@developer.gserviceaccount.com`（Compute Engineのデフォルトサービスアカウント）
 - **スコープ**: プロジェクト全体に付与
 
 ### 💡 補足
@@ -390,6 +441,7 @@ gcloud run deploy utopian-food-blog \
 ### 💡 簡単デプロイ：スクリプトを使用
 
 毎回長いコマンドを入力する代わりに、`deploy.sh` という名前のスクリプトファイルを作って実行してもよいです：  
+`chmod +x deploy.sh`を忘れずに。
 
 （例）
 ```bash
@@ -631,7 +683,7 @@ Cloud SQLインスタンスにパブリックIPが割り当てられていても
 
 ```bash
 gcloud sql instances create utopian-food-blog-db \
-  --database-version=MYSQL_8_4 \
+  --database-version=MYSQL_8_0 \
   --tier=db-f1-micro \
   --region=asia-northeast1
 ```
