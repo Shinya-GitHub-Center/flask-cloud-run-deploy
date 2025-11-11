@@ -209,7 +209,7 @@ gcloudコマンドを使用するので、作業の前に`gcloud info`でター�
 ### MySQL を使用する場合（本プロジェクトで使用）
 
 Cloud SQL インスタンスを作成  
-`gcloud sql instances create utopian-food-blog-db --database-version=MYSQL_8_0 --tier=db-f1-micro --region=asia-northeast1`
+`gcloud sql instances create utopian-food-blog-db --database-version=MYSQL_8_4 --tier=db-f1-micro --region=asia-northeast1`
 
 データベースを作成  
 `gcloud sql databases create blogpost --instance=utopian-food-blog-db`
@@ -360,6 +360,7 @@ echo -n "your_login_password" | gcloud secrets create utopian-blog-admin-passwor
 - コマンドだとめんどくさいで、ブラウザで該当プロジェクト上でサービスアカウントページを開き、`default compute service account`に「Secret Managerのシークレットアクセサー」のロールを追加する。（権限→アクセス管理→ロールから選択で追加）
 - 「Storage オブジェクト閲覧者」（Storage Object Viewer）も追加する（コンテナビルド時にアプリが一時的にストレージを使用するため）
 - 「Artifact Registry 書き込み」（Artifact Registry Writer）も追加する（コンテナイメージを保存できるよう）
+- 「Cloud SQL クライアント」（Cloud SQL Client）のロールも追加付与する。
 - 「ログ閲覧者」と「ログ書き込み」も任意でロール追加すると、エラー時等にリモートでログを確認できるようになる。
 
 ### 🔐 権限の説明
@@ -438,3 +439,224 @@ SQLite から PostgreSQL/MySQL への移行時は、データ型の違いに注�
 # 開発環境では、使用しない時はインスタンスを停止
 gcloud sql instances patch utopian-food-blog-db --activation-policy=NEVER
 ```
+
+## Google Cloud 認証の仕組み（勉強用）
+
+### 認証方式の概要
+
+Google Cloudでは、**誰が・どこで・何を**するかによって異なる認証方式が使用されます。
+
+### 3つの主要な認証フロー
+
+#### 1. ローカルPCからのデプロイ操作
+
+```bash
+gcloud auth login
+gcloud run deploy ...
+```
+
+- **認証方式**: OAuth 2.0トークンベース
+- **トークンの保存場所**: `~/.config/gcloud/`（このプロジェクト外のあなたのローカルPCホームディレクトリ以下の設定ファイル内）
+- **仕組み**:
+  - ブラウザでGoogleアカウントにログイン
+  - **アクセストークン**（短時間有効、通常1時間）と**リフレッシュトークン**（長期間有効）を取得
+  - ローカルに保存されたトークンを使ってGCP APIにリクエスト
+  - トークン期限切れ時は自動的に更新
+- **JSONキー**: 不要 ✅
+
+#### 2. Cloud Build でのコンテナビルド（GCP内部）
+
+```
+gcloud run deploy 実行
+  ↓
+Cloud Build が裏側で起動
+  ↓
+Dockerイメージをビルド
+  ↓
+Artifact Registry に保存
+```
+
+- **認証方式**: GCPメタデータサーバー経由
+- **使用するサービスアカウント**: Default Compute Service Account
+- **必要な権限**:
+  - `Artifact Registry Writer` - ビルドしたイメージを保存
+  - `Storage Object Viewer` - ビルド時の一時ファイルにアクセス
+  - `Secret Manager Secret Accessor` - シークレットを取得（必要な場合）
+- **JSONキー**: 不要（メタデータサーバーから自動取得）✅
+
+**メタデータサーバーとは**:
+```bash
+# GCP内部のサービスから実行すると動作する特別なエンドポイント
+curl "http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token" \
+  -H "Metadata-Flavor: Google"
+# → アクセストークンが自動取得される
+```
+
+#### 3. Cloud Run 上のアプリ実行時（GCP内部）
+
+```
+デプロイされたFlaskアプリ
+  ↓
+Cloud SQL、Storage等にアクセス
+```
+
+- **認証方式**: GCPメタデータサーバー経由
+- **使用するサービスアカウント**: Default Compute Service Account
+- **必要な権限**:
+  - `Cloud SQL Client` - データベースに接続
+  - `Secret Manager Secret Accessor` - シークレットを取得
+  - `Cloud Logging Writer` - ログを出力（任意）
+- **JSONキー**: 不要（メタデータサーバーから自動取得）✅
+
+### サービスアカウントのJSONキーファイル
+
+#### JSONキーが不要な場合（通常の開発・本番運用）
+
+| 環境 | 認証方法 | JSONキー |
+|------|---------|---------|
+| ローカルPC | `gcloud auth login` | 不要 ✅ |
+| Cloud Build | メタデータサーバー | 不要 ✅ |
+| Cloud Run | メタデータサーバー | 不要 ✅ |
+| Compute Engine | メタデータサーバー | 不要 ✅ |
+
+#### JSONキーが必要な場合
+
+| 環境 | 理由 | JSONキー |
+|------|------|---------|
+| GitHub Actions | GCP外部からのデプロイ | 必要 ⚠️ |
+| CI/CD（外部） | GCP外部からのデプロイ | 必要 ⚠️ |
+| 他社クラウド | GCP外部からのアクセス | 必要 ⚠️ |
+| オンプレミス | GCP外部からのアクセス | 必要 ⚠️ |
+
+### 重要なポイント
+
+1. **`gcloud auth login` = ユーザー認証**
+   - あなた自身のGoogleアカウントで認証
+   - ローカルPCからGCP操作を行う権限
+
+2. **Default Compute Service Account = アプリ認証**
+   - GCP内部で動作するサービス（Cloud Build、Cloud Run等）の認証
+   - 各種リソースへのアクセス権限が必要
+
+3. **メタデータサーバー = GCP内部の自動認証**
+   - GCP内部で動作するサービスは自動的に認証情報を取得
+   - JSONキーファイル不要
+
+4. **JSONキー = GCP外部からの認証**
+   - GitHub Actions等、GCP外部から操作する場合のみ必要
+   - 通常の開発・運用では不要
+
+### 確認コマンド
+
+```bash
+# 現在の認証情報を確認
+gcloud auth list
+
+# 現在のアクセストークンを表示
+gcloud auth print-access-token
+
+# プロジェクトとアカウントの設定を確認
+gcloud config list
+
+# サービスアカウントの一覧を表示
+gcloud iam service-accounts list
+
+# Cloud Run サービスの環境変数とサービスアカウントを確認
+gcloud run services describe utopian-food-blog \
+    --region asia-northeast1 \
+    --format "value(spec.template.spec.serviceAccountName)"
+```
+
+## 便利SQLコマンド
+`gcloud sql connect utopian-food-blog-db --user=bloguser`でcloud shellからログインして、`USE blogpost;`でデータベースを選択後、
+
+- すべてのテーブルを表示 : `SHOW TABLES;`
+- すべての投稿内容（レコード）を表示 : `SELECT * FROM posted;`
+- データベース登録済みのすべてのユーザーを表示 : `SELECT user, host FROM mysql.user;`
+- bloguserに与えられている権限を表示 : `SHOW GRANTS FOR bloguser@;`
+
+1. ポイントは`gcloud sql users create`によってユーザーを作成しているので自動ですべてのデータベースに対して操作の権限が最初から与えられている。
+2. Cloud RunからのMySQL接続方法はUnixソケット経由を使用している。（Unixソケット経由の接続では、MySQLは接続元を localhost として認識する。よってホスト名が空欄、つまりbloguser@になっていてもよい）
+
+## Cloud SQLのアクセス制御の仕組み
+
+### パブリックIPがある場合のセキュリティ
+
+Cloud SQLインスタンスにパブリックIPが割り当てられていても、**承認済みネットワーク（Authorized Networks）**の設定によってアクセス制御されます。
+
+```
+パブリックIPあり = 誰でもアクセス可能 ❌ 間違い
+
+パブリックIPあり + 承認済みネットワーク = アクセス制御 ✅ 正解
+```
+
+### デフォルトの動作
+
+```bash
+gcloud sql instances create utopian-food-blog-db \
+  --database-version=MYSQL_8_4 \
+  --tier=db-f1-micro \
+  --region=asia-northeast1
+```
+
+このコマンドでインスタンスを作成した場合：
+
+| 項目 | 状態 |
+|-----|-----|
+| パブリックIP | ✅ 割り当てられる |
+| 承認済みネットワーク | 🔒 **空（デフォルト）** |
+| 外部からの直接アクセス | ❌ **拒否される** |
+| `gcloud sql connect`の使用 | ✅ **可能**（一時的に承認） |
+| Cloud Runからの接続 | ✅ **可能**（Unixソケット経由） |
+
+### セキュリティの仕組み
+
+#### 1. **通常の外部アクセス**（承認済みネットワークなし）
+
+```bash
+# 承認済みネットワークに何も設定していない状態
+mysql -h <PUBLIC_IP> -u bloguser -p
+
+# 結果
+ERROR 2003 (HY000): Can't connect to MySQL server on '<PUBLIC_IP>'
+(Connection timed out)
+```
+
+**✅ セキュリティ的に安全** - 拒否される
+
+#### 2. **`gcloud sql connect`を使用**
+
+```bash
+gcloud sql connect utopian-food-blog-db --user=bloguser
+
+# 内部的な動作：
+# 1. Cloud ShellのIPアドレスを取得（例：34.85.123.45）
+# 2. 承認済みネットワークに一時追加：34.85.123.45/32
+# 3. MySQL接続を確立
+# 4. 5分後に自動削除
+```
+
+**✅ セキュリティ的に安全** - 5分間の制限付きアクセス
+
+#### 3. **もし誰かが承認済みネットワークに `0.0.0.0/0` を追加したら**
+
+```bash
+# これをやってしまうと危険！
+gcloud sql instances patch utopian-food-blog-db \
+  --authorized-networks=0.0.0.0/0
+
+# この状態だと、世界中の誰でもアクセス可能に！
+```
+
+**❌ セキュリティ的に危険** - 全世界に公開
+
+### Cloud Runからの接続（Unixソケット経由）
+
+```python
+# Unixソケット経由の接続（承認済みネットワークの設定に関係なく動作）
+DATABASE_URI = "mysql+pymysql://bloguser:pass@/blogpost?unix_socket=/cloudsql/..."
+```
+
+- 承認済みネットワークの設定に**影響されない**
+- VPC内部の接続として扱われる
+- **常に安全にアクセス可能**
