@@ -1,7 +1,12 @@
 # About
 
+## [セルフ勉強用]Sorry, this repo is Japanese language only![管理人備忘録]
+
 こちらはFlaskアプリの勉強用リポジトリです。  
-固定された管理人専用のログインIDでログインして、管理人のみが投稿・削除等ができるシンプルなブログアプリです。データベースを利用したSSR動的アプリです。
+固定された管理人専用のログインIDでログインして、管理人のみが投稿・削除等ができるシンプルなブログアプリです。データベースを利用したSSR動的アプリです。  
+本番環境は、Google CloudのCloud Runにデプロイして、Cloud SQLのMySQLに接続する構成です。
+
+**※セキュリティは必要最小限で構築されていますので「テスト・勉強用」のみにお使いください。**
 
 データベースなしの一番簡単なバージョン（簡単なボタンクリックによる値インクリメントのテストアプリ）で勉強したい場合は、別途[こちら](https://github.com/Shinya-GitHub-Center/flask-cloud-run-deploy/tree/v1-only-button-click)を参照してください。
 
@@ -503,6 +508,11 @@ gcloud run services describe utopian-food-blog \
 ```bash
 gcloud run logs read utopian-food-blog --region asia-northeast1
 ```
+
+## 基本的なDevOps方針と改善点
+- `requirements.txt`の中身やappディレクトリ内のコードを変えてデプロイするごとに、しっかりと変更点が反映されて自動デプロイしてくれる。
+- しかし現時点でイメージキャッシュが全く効かないので毎回時間がかかる。（Cloud Buildのyaml設定ファイル等で制御できるらしいが、めんどくさいのでスキップ！！）
+- Cloudflareプラットフォームでのデプロイ作業に慣れた後で、今回はじめてGoogleで「Workersからデータベース連携」のようなことを試したら、めんどくさ過ぎてビビった笑（いつまでたってもAPP開発に専念できない病）
 
 ## セキュリティのベストプラクティス
 
