@@ -165,13 +165,13 @@ gcloud run deploy --source . --dry-run
 
 ## 初期セットアップ
 
-### 1. Google Cloud CLIのインストール（未インストールの場合）
+### 1. Google Cloud CLIのインストール（未インストールの場合のみ）
 
 https://cloud.google.com/sdk/docs/install?hl=ja
 
 （ubuntuの場合はパッケージ形式でインストールすること）
 
-### 2. Google Cloudの初期設定およびログイン
+### 2. Google Cloudの初期設定およびログイン（gcloud CLIを初めて使う場合のみ）
 
 ```bash
 gcloud init
