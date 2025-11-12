@@ -355,76 +355,10 @@ echo -n "your_login_name" | gcloud secrets create utopian-blog-admin-username --
 # ブログアプリパスワード
 echo -n "your_login_password" | gcloud secrets create utopian-blog-admin-password --data-file=-
 ```
-## 6. サービスアカウントにシークレット読み取り等の権限を与える
 
-### 方法1：gcloudコマンドで一括設定（推奨）
+## 6. Cloud Buildを使用してデプロイ
 
-まず、プロジェクト番号を取得：
-
-```bash
-PROJECT_ID=$(gcloud config get-value project)
-PROJECT_NUMBER=$(gcloud projects describe ${PROJECT_ID} --format="value(projectNumber)")
-SERVICE_ACCOUNT="${PROJECT_NUMBER}-compute@developer.gserviceaccount.com"
-
-echo "サービスアカウント: ${SERVICE_ACCOUNT}"
-```
-
-必要な5つの権限を付与：
-
-```bash
-# 1. Secret Manager のシークレットアクセサー
-gcloud projects add-iam-policy-binding ${PROJECT_ID} \
-    --member="serviceAccount:${SERVICE_ACCOUNT}" \
-    --role="roles/secretmanager.secretAccessor"
-
-# 2. Storage オブジェクト閲覧者（コンテナビルド時に使用）
-gcloud projects add-iam-policy-binding ${PROJECT_ID} \
-    --member="serviceAccount:${SERVICE_ACCOUNT}" \
-    --role="roles/storage.objectViewer"
-
-# 3. Artifact Registry 書き込み（コンテナイメージ保存用）
-gcloud projects add-iam-policy-binding ${PROJECT_ID} \
-    --member="serviceAccount:${SERVICE_ACCOUNT}" \
-    --role="roles/artifactregistry.writer"
-
-# 4. Cloud SQL クライアント
-gcloud projects add-iam-policy-binding ${PROJECT_ID} \
-    --member="serviceAccount:${SERVICE_ACCOUNT}" \
-    --role="roles/cloudsql.client"
-
-# 5. ログ書き込み（エラーログ確認用）
-gcloud projects add-iam-policy-binding ${PROJECT_ID} \
-    --member="serviceAccount:${SERVICE_ACCOUNT}" \
-    --role="roles/logging.logWriter"
-```
-
-### 方法2：ブラウザで手動設定
-
-ブラウザで該当プロジェクト上でサービスアカウントページを開き、`default compute service account`に以下のロールを追加：
-- 「Secret Managerのシークレットアクセサー」
-- 「Storage オブジェクト閲覧者」
-- 「Artifact Registry 書き込み」
-- 「Cloud SQL クライアント」
-- 「ログ書き込み」
-
-### 🔐 権限の説明
-
-| ロール | 説明 |
-|--------|------|
-| `roles/secretmanager.secretAccessor` | Secret Managerに保存されたシークレット（パスワードや接続文字列など）を読み取る権限 |
-| `roles/storage.objectViewer` | Cloud Storageからオブジェクトを読み取る権限（コンテナビルド時に必要） |
-| `roles/artifactregistry.writer` | Artifact Registryにコンテナイメージを書き込む権限 |
-| `roles/cloudsql.client` | Cloud SQLインスタンスへの接続権限 |
-| `roles/logging.logWriter` | Cloud Loggingへのログ書き込み権限（デバッグ・監視用） |
-
-- **対象サービスアカウント**: `PROJECT_NUMBER-compute@developer.gserviceaccount.com`（Compute Engineのデフォルトサービスアカウント）
-- **スコープ**: プロジェクト全体に付与
-
-### 💡 補足
-
-このサービスアカウント（`*-compute@developer.gserviceaccount.com`）は、Google Cloudのデフォルトサービスアカウントで、Cloud Runなどのサービスが使用します。今回のように、Secret Managerなどの他のサービスにアクセスする場合は、明示的に権限を付与する必要があります。
-
-## 7. Cloud Buildを使用してデプロイ
+※一回目のデプロイ時に、編集者のロールを持ったサービスアカウント`${PROJECT_NUMBER}-compute@developer.gserviceaccount.com`が自動で作成される。
 
 Secret Manager から参照しながらデプロイする。プロジェクトのルートディレクトリで以下を実行：
 
@@ -475,6 +409,84 @@ gcloud run deploy ${SERVICE_NAME} \
     --set-secrets "GCLOUD_DB_CONNECTION=${SECRET_DB_CONNECTION}:latest,SECRET_KEY=${SECRET_KEY}:latest,ADMIN_PASSWORD=${SECRET_ADMIN_PASSWORD}:latest,ADMIN_USERNAME=${SECRET_ADMIN_USERNAME}:latest" \
     --project ${PROJECT_ID}
 ```
+
+## 7. サービスアカウントに特定の権限（ロール）のみ紐付けるバージョン（オプショナル）
+
+### 方法1：gcloudコマンドで一括設定（推奨）
+
+まず、プロジェクト番号を取得：
+
+```bash
+PROJECT_ID=$(gcloud config get-value project)
+PROJECT_NUMBER=$(gcloud projects describe ${PROJECT_ID} --format="value(projectNumber)")
+SERVICE_ACCOUNT="${PROJECT_NUMBER}-compute@developer.gserviceaccount.com"
+
+echo "サービスアカウント: ${SERVICE_ACCOUNT}"
+```
+
+すでに編集者のロールがアタッチされている場合は、セキュリティ的にまずこの巨大権限を削除してから、以下の最小権限をひとつづつ付与していく。
+
+```bash
+# 編集者ロールを削除（巨大権限の削除）
+gcloud projects remove-iam-policy-binding ${PROJECT_ID} \
+    --member="serviceAccount:${SERVICE_ACCOUNT}" \
+    --role="roles/editor"
+```
+
+必要な5つの権限を付与：
+
+```bash
+# 1. Secret Manager のシークレットアクセサー
+gcloud projects add-iam-policy-binding ${PROJECT_ID} \
+    --member="serviceAccount:${SERVICE_ACCOUNT}" \
+    --role="roles/secretmanager.secretAccessor"
+
+# 2. Storage オブジェクト閲覧者（コンテナビルド時に使用）
+gcloud projects add-iam-policy-binding ${PROJECT_ID} \
+    --member="serviceAccount:${SERVICE_ACCOUNT}" \
+    --role="roles/storage.objectViewer"
+
+# 3. Artifact Registry 書き込み（コンテナイメージ保存用）
+gcloud projects add-iam-policy-binding ${PROJECT_ID} \
+    --member="serviceAccount:${SERVICE_ACCOUNT}" \
+    --role="roles/artifactregistry.writer"
+
+# 4. Cloud SQL クライアント
+gcloud projects add-iam-policy-binding ${PROJECT_ID} \
+    --member="serviceAccount:${SERVICE_ACCOUNT}" \
+    --role="roles/cloudsql.client"
+
+# 5. ログ書き込み（エラーログ確認用）
+gcloud projects add-iam-policy-binding ${PROJECT_ID} \
+    --member="serviceAccount:${SERVICE_ACCOUNT}" \
+    --role="roles/logging.logWriter"
+```
+
+### 方法2：ブラウザで手動設定
+
+ブラウザで該当プロジェクト上でサービスアカウントページを開き、まず「編集者」のロールを削除してから、`default compute service account`に以下のロールを追加：
+- 「Secret Managerのシークレットアクセサー」
+- 「Storage オブジェクト閲覧者」
+- 「Artifact Registry 書き込み」
+- 「Cloud SQL クライアント」
+- 「ログ書き込み」
+
+### 🔐 権限の説明
+
+| ロール | 説明 |
+|--------|------|
+| `roles/secretmanager.secretAccessor` | Secret Managerに保存されたシークレット（パスワードや接続文字列など）を読み取る権限 |
+| `roles/storage.objectViewer` | Cloud Storageからオブジェクトを読み取る権限（コンテナビルド時に必要） |
+| `roles/artifactregistry.writer` | Artifact Registryにコンテナイメージを書き込む権限 |
+| `roles/cloudsql.client` | Cloud SQLインスタンスへの接続権限 |
+| `roles/logging.logWriter` | Cloud Loggingへのログ書き込み権限（デバッグ・監視用） |
+
+- **対象サービスアカウント**: `PROJECT_NUMBER-compute@developer.gserviceaccount.com`（Compute Engineのデフォルトサービスアカウント）
+- **スコープ**: プロジェクト全体に付与
+
+### 💡 補足
+
+このサービスアカウント（`*-compute@developer.gserviceaccount.com`）は、Google Cloudのデフォルトサービスアカウントで、Cloud Runなどのサービスが使用します。今回のように、Secret Managerなどの他のサービスにアクセスする場合は、明示的に権限を付与する必要があります。（編集者ロールがある場合はこれだけでOKだが、権限が大き過ぎるので注意）
 
 ## 8. 動作確認
 
