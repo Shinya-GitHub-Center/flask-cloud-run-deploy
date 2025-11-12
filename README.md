@@ -192,6 +192,8 @@ gcloud services enable cloudbuild.googleapis.com
 gcloud services enable run.googleapis.com
 ```
 
+※この時点で、編集者のロールを持ったサービスアカウント`${PROJECT_NUMBER}-compute@developer.gserviceaccount.com`が自動で作成される。
+
 # データベース初期化からデプロイまで
 
 ## 概要
@@ -357,8 +359,6 @@ echo -n "your_login_password" | gcloud secrets create utopian-blog-admin-passwor
 ```
 
 ## 6. Cloud Buildを使用してデプロイ
-
-※一回目のデプロイ時に、編集者のロールを持ったサービスアカウント`${PROJECT_NUMBER}-compute@developer.gserviceaccount.com`が自動で作成される。
 
 Secret Manager から参照しながらデプロイする。プロジェクトのルートディレクトリで以下を実行：
 
