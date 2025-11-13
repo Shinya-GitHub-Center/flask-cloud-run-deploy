@@ -1,19 +1,22 @@
 import os
-from flask import Flask
-from flask import render_template
+from flask import Flask, request, render_template
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from sqlalchemy import select
-from app import models
-from flask import request
 from flask_paginate import Pagination, get_page_parameter
 
+# Flask初期化
 app = Flask(__name__)
 app.config.from_pyfile("settings.py")
 
+# DB初期化
 db = SQLAlchemy()
 db.init_app(app)
 
+# モデルのインポート（DBの初期化後に行う）
+from app import models
+
+# Migrateの初期化（モデルのインポート後に行う）
 basedir = os.path.dirname(os.path.dirname(__file__))
 mgdir = basedir + "/db/migrations"
 Migrate(app, db, directory=mgdir)
