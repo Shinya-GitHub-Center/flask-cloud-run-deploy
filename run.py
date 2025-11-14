@@ -1,6 +1,7 @@
 """
 Flask application entry point
 アプリケーションのエントリーポイント
+（ローカル専用でデバッグモードで起動するためのファイル）
 """
 
 from app import create_app

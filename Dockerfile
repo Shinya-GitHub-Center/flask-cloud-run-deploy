@@ -26,5 +26,5 @@ USER appuser
 # Cloud Runが使用するポート（環境変数PORTから取得、デフォルトは8080）
 ENV PORT=8080
 
-# gunicornでアプリケーションを起動（JSON形式でシグナル処理を最適化）
-CMD ["sh", "-c", "exec gunicorn --bind :$PORT --workers 1 --threads 8 --timeout 0 app.main:app"]
+# gunicornでアプリケーションを起動（ファクトリ関数を直接呼び出し）
+CMD ["sh", "-c", "exec gunicorn --bind :$PORT --workers 1 --threads 8 --timeout 0 'app:create_app()'"]
