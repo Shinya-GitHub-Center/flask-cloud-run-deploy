@@ -1,9 +1,7 @@
-from flask import Blueprint
-from flask import render_template, url_for, redirect, session
+from flask import Blueprint, render_template, url_for, redirect, session, current_app
 from app.crud import forms
-from app.main import app
 from app import models
-from app.main import db
+from app.models import db
 from sqlalchemy import select
 
 crud = Blueprint(
@@ -23,8 +21,8 @@ def login():
 
     if form.validate_on_submit():
         if (
-            form.username.data != app.config["USERNAME"]
-            or form.password.data != app.config["PASSWORD"]
+            form.username.data != current_app.config["USERNAME"]
+            or form.password.data != current_app.config["PASSWORD"]
         ):
             return render_template("login.html", form=form)
         else:
@@ -60,8 +58,8 @@ def login_del():
     session["logged_in"] = False
     if form.validate_on_submit():
         if (
-            form.username.data != app.config["USERNAME"]
-            and form.password.data != app.config["PASSWORD"]
+            form.username.data != current_app.config["USERNAME"]
+            and form.password.data != current_app.config["PASSWORD"]
         ):
             return render_template("login_delete.html", form=form)
         else:
