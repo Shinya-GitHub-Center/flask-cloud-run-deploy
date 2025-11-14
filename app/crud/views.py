@@ -59,7 +59,7 @@ def login_del():
     if form.validate_on_submit():
         if (
             form.username.data != current_app.config["USERNAME"]
-            and form.password.data != current_app.config["PASSWORD"]
+            or form.password.data != current_app.config["PASSWORD"]
         ):
             return render_template("login_delete.html", form=form)
         else:

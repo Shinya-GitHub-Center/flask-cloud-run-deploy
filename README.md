@@ -16,9 +16,9 @@
 1. uv（Pythonパッケージマネージャー＆仮想環境作成ツール）があなたのローカルPCにインストールされていることが前提となります。このプロジェクトではpythonのv3.12を使用するので、事前にグローバルでuvインストールしておくとよいですね。
 2. まずこのリポジトリをダウンロード後、`uv sync`コマンドにて初期化を行ってください（必要パッケージがこのプロジェクト以下の仮想環境にインストールされます）
 3. VSCodeやCursorを使用して自動でPythonインタープリタが切り替わらない場合は、手動で`./.venv/bin/python`に切り替えてください。（このプロジェクト内のパッケージおよびPythonを使用するため）
-4. `uv run flask --app app.main:app db init`でデータベース初期化（ローカル環境）
-5. `uv run flask --app app.main:app db migrate`でマイグレーションファイル作成（ローカル環境）
-6. `uv run flask --app app.main:app db upgrade`でデータベースにデータ構造を注入（ローカル環境）
+4. `uv run flask --app run:app db init`でデータベース初期化（ローカル環境）
+5. `uv run flask --app run:app db migrate`でマイグレーションファイル作成（ローカル環境）
+6. `uv run flask --app run:app db upgrade`でデータベースにデータ構造を注入（ローカル環境）
 
 Notice: Zipでダウンロードした場合は各自でGit初期化してください。また、勉強用・テスト用プロジェクトなので、特に`uv.lock`はこのリポジトリに含めていませんので、常に最新のパッケージ・モジュールを使用して勉強してください。
 
