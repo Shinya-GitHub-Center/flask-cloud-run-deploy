@@ -1,5 +1,8 @@
 from datetime import datetime
-from app.main import db
+from flask_sqlalchemy import SQLAlchemy
+
+# dbインスタンスを直接作成（ファクトリパターン用）
+db = SQLAlchemy()
 
 
 class Blogpost(db.Model):
